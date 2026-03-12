@@ -1,10 +1,10 @@
+// lib/screens/add_expense_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/expense_provider.dart';
 import '../models/expense.dart';
 
-/// Handles both Add and Edit modes.
-/// Pass [expense] to pre-fill the form for editing; leave null to add new.
 class AddExpenseScreen extends StatefulWidget {
   final Expense? expense;
 
@@ -23,7 +23,6 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   @override
   void initState() {
     super.initState();
-    // Pre-fill fields when in edit mode
     if (_isEditing) {
       _titleCtrl.text  = widget.expense!.title;
       _amountCtrl.text = widget.expense!.amount.toString();
@@ -45,12 +44,10 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     final provider = context.read<ExpenseProvider>();
 
     if (_isEditing) {
-      // EDIT: update the existing expense
       provider.updateExpense(
         widget.expense!.copyWith(title: title, amount: amount),
       );
     } else {
-      // WRITE: create a new expense
       provider.addExpense(title, amount);
     }
 
@@ -69,17 +66,17 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
           children: [
             TextField(
               controller: _titleCtrl,
+              style: const TextStyle(color: Colors.white),
               decoration: const InputDecoration(
                 labelText: 'Title',
-                border: OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: _amountCtrl,
+              style: const TextStyle(color: Colors.white),
               decoration: const InputDecoration(
                 labelText: 'Amount (₱)',
-                border: OutlineInputBorder(),
               ),
               keyboardType: TextInputType.number,
             ),
