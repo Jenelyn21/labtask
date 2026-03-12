@@ -1,17 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/expense_provider.dart';
+import '../models/expense.dart';
 
+/// Handles both Add and Edit modes.
+/// Pass [expense] to pre-fill the form for editing; leave null to add new.
 class AddExpenseScreen extends StatefulWidget {
-  const AddExpenseScreen({super.key});
+  final Expense? expense;
+
+  const AddExpenseScreen({super.key, this.expense});
 
   @override
   State<AddExpenseScreen> createState() => _AddExpenseScreenState();
 }
 
 class _AddExpenseScreenState extends State<AddExpenseScreen> {
-  final TextEditingController _titleCtrl = TextEditingController();
+  final TextEditingController _titleCtrl  = TextEditingController();
   final TextEditingController _amountCtrl = TextEditingController();
+
+  bool get _isEditing => widget.expense != null;
+
+  @override
+  void initState() {
+    super.initState();
+    // Pre-fill fields when in edit mode
+    if (_isEditing) {
+      _titleCtrl.text  = widget.expense!.title;
+      _amountCtrl.text = widget.expense!.amount.toString();
+    }
+  }
 
   @override
   void dispose() {
@@ -21,11 +38,22 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   }
 
   void _save() {
-    final title = _titleCtrl.text.trim();
+    final title  = _titleCtrl.text.trim();
     final amount = double.tryParse(_amountCtrl.text) ?? 0;
     if (title.isEmpty || amount <= 0) return;
 
-    context.read<ExpenseProvider>().addExpense(title, amount);
+    final provider = context.read<ExpenseProvider>();
+
+    if (_isEditing) {
+      // EDIT: update the existing expense
+      provider.updateExpense(
+        widget.expense!.copyWith(title: title, amount: amount),
+      );
+    } else {
+      // WRITE: create a new expense
+      provider.addExpense(title, amount);
+    }
+
     Navigator.pop(context);
   }
 
@@ -33,7 +61,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Expense'),
+        title: Text(_isEditing ? 'Edit Expense' : 'Add Expense'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
@@ -60,7 +88,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: _save,
-                child: const Text('Add'),
+                child: Text(_isEditing ? 'Save Changes' : 'Add'),
               ),
             ),
           ],
